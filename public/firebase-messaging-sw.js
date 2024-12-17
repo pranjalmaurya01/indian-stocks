@@ -1,9 +1,9 @@
 /* eslint-disable no-undef */
 importScripts(
-  "https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js"
+  "https://www.gstatic.com/firebasejs/11.1.0/firebase-app-compat.js"
 );
 importScripts(
-  "https://www.gstatic.com/firebasejs/9.2.0/firebase-messaging-compat.js"
+  "https://www.gstatic.com/firebasejs/11.1.0/firebase-messaging-compat.js"
 );
 
 self.addEventListener("install", async () => {
