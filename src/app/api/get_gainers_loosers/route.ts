@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
 
   const cP = Number(url.searchParams.get('changePercentage'));
-  const changePercentage = Number.isNaN(cP) ? 1 : cP;
+  const changePercentage = Number.isNaN(cP) ? 3 : cP;
 
   // const index = url.searchParams.getAll('index');
   // console.log({ index });

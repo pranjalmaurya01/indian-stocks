@@ -3,8 +3,9 @@
 import { registerServiceWorker } from '@/utils';
 import { useEffect } from 'react';
 import { onMessageListener, requestPermission } from './messaging';
+import { saveFcm } from './save_fcm';
 
-const Notification = () => {
+const NotificationComp = () => {
   useEffect(() => {
     let unsubscribe: any;
     (async () => {
@@ -17,25 +18,21 @@ const Notification = () => {
         const token = await permission.token;
 
         if (token) {
-          console.log(token);
+          await saveFcm({ fcm: token });
         }
-        // await request(
-        //   'POST',
-        //   'notification/fcm_operations/',
-        //   {},
-        //   { fcm: token }
-        // );
-
-        unsubscribe = onMessageListener().then((payload: any) => {
-          console.log({ notification_payload: payload });
-          // notification.info({
-          //   message: payload.notification.title,
-          //   description: payload.notification.body,
-          //   duration: 8,
-          //   placement: 'topRight',
-          // });
-        });
       }
+      unsubscribe = onMessageListener().then((payload: any) => {
+        console.log({ notification_payload: payload });
+        const notificationTitle = payload.notification.title;
+        const notificationOptions = {
+          body: payload.notification.body,
+          icon: './favicon.ico',
+        };
+        const notification = new Notification(
+          notificationTitle,
+          notificationOptions
+        );
+      });
     })();
     return () => {
       if (unsubscribe)
@@ -45,4 +42,4 @@ const Notification = () => {
   return null;
 };
 
-export default Notification;
+export default NotificationComp;

@@ -4,9 +4,16 @@ import FIREBASE_CONFIG from './config';
 
 export const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
 
+export function getFirebaseApp() {
+  return initializeApp(FIREBASE_CONFIG);
+}
+
+export function getFirebaseMessaging() {
+  return getMessaging(getFirebaseApp());
+}
+
 export const getFCMToken = async () => {
-  const app = initializeApp(FIREBASE_CONFIG);
-  const messaging = getMessaging(app);
+  const messaging = getFirebaseMessaging();
   try {
     const token = await getToken(messaging, {
       vapidKey: VAPID_KEY,
@@ -33,8 +40,7 @@ const requestPermission = async () => {
 
 const onMessageListener = () =>
   new Promise((resolve) => {
-    const app = initializeApp(FIREBASE_CONFIG);
-    const messaging = getMessaging(app);
+    const messaging = getFirebaseMessaging();
     onMessage(messaging, (payload) => {
       resolve(payload);
       console.log(payload);

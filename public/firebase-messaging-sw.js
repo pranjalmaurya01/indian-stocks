@@ -7,22 +7,25 @@ importScripts(
 );
 
 self.addEventListener("install", async () => {
-  const response = await fetch("/api/get_firebase_config");
-  const firebaseConfig = await response.json();
+  try {
+    const response = await fetch("/api/get_firebase_config");
+    const firebaseConfig = await response.json();
 
-  firebase.initializeApp(firebaseConfig);
-
-  const messaging = firebase.messaging();
-  messaging.onBackgroundMessage((payload) => {
-    console.log(
-      '[firebase-messaging-sw.js] Received background message ',
-      payload
-    );
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-      body: payload.notification.body,
-      icon: './favicon.ico',
-    };
-    self.registration.showNotification(notificationTitle, notificationOptions);
-  });
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+    messaging.onBackgroundMessage((payload) => {
+      console.log(
+        '[firebase-messaging-sw.js] Received background message ',
+        payload
+      );
+      const notificationTitle = payload.notification.title;
+      const notificationOptions = {
+        body: payload.notification.body,
+        icon: './favicon.ico',
+      };
+      self.registration.showNotification(notificationTitle, notificationOptions);
+    });
+  } catch (e) {
+    console.error(e);
+  }
 });

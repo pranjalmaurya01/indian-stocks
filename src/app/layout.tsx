@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import Notification from './firebase/Notification';
+import NotificationComp from './firebase/Notification';
 import './globals.css';
 
 const geistSans = Geist({
@@ -30,7 +30,7 @@ export default function RootLayout({
       >
         {children}
       </body>
-      <Notification />
+      <NotificationComp />
     </html>
   );
 }
