@@ -1,8 +1,7 @@
 'use server';
+import { NOTI_TOPIC } from '@/constants';
 import { getMessaging } from 'firebase-admin/messaging';
 import initializeFirebaseAdminApp from './admin';
-
-const topic = 'stocks-noti';
 
 export async function saveFcm({ fcm }: { fcm: string }) {
   try {
@@ -12,7 +11,7 @@ export async function saveFcm({ fcm }: { fcm: string }) {
 
     const resp = await getMessaging().subscribeToTopic(
       registrationTokens,
-      topic
+      NOTI_TOPIC
     );
 
     return resp;

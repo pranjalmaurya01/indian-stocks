@@ -1,3 +1,6 @@
+import initializeFirebaseAdminApp from '@/app/firebase/admin';
+import { NOTI_TOPIC } from '@/constants';
+import { getMessaging } from 'firebase-admin/messaging';
 import { NseIndia } from 'stock-nse-india';
 import { IndexEquityInfo } from 'stock-nse-india/build/interface';
 
@@ -80,6 +83,18 @@ export async function GET(request: Request) {
   // console.time();
   const data = await Promise.all(allPromises);
   // console.timeEnd();
+
+  const message = {
+    notification: {
+      title: 'Stocks Update',
+      body: JSON.stringify(data),
+    },
+    topic: NOTI_TOPIC,
+  };
+
+  await initializeFirebaseAdminApp();
+  const resp = await getMessaging().send(message);
+  console.log(resp);
 
   return Response.json(data);
 }
