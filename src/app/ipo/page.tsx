@@ -2,10 +2,7 @@ import * as cheerio from 'cheerio';
 
 async function getIpoDetails() {
   const page = await fetch(
-    'https://www.investorgain.com/report/live-ipo-gmp/331/ipo/',
-    {
-      next: { revalidate: 60 * 60 * 6 }, //every 6 hrs
-    }
+    'https://www.investorgain.com/report/live-ipo-gmp/331/ipo/'
   ).then((e) => e.text());
 
   const $ = cheerio.load(page);
