@@ -1,15 +1,16 @@
-export const revalidate = 0;
+export const revalidate = 3600;
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
 import * as cheerio from 'cheerio';
+import { Metadata } from 'next';
 
 function processRows($: any, selectedRows: any) {
   return selectedRows
@@ -30,7 +31,8 @@ function processRows($: any, selectedRows: any) {
         });
       return rowData;
     })
-    .get();
+    .get()
+    .filter((e) => e);
 }
 
 async function getIpoDetails() {
@@ -40,43 +42,60 @@ async function getIpoDetails() {
 
   const $ = cheerio.load(page);
 
-  const closingTodayRows = $('tr:has(.badge.rounded-pill.bg-danger)');
-  const closedTodayRows = $('tr:has(.badge.rounded-pill.bg-primary)');
+  const allRows: any[] = processRows($, $('tr'));
 
-  const closingToday = processRows($, closingTodayRows);
-  const closedToday = processRows($, closedTodayRows);
+  const open = allRows.filter((e) => e?.Status?.split(' ')[0] === 'Open');
 
-  return { closingToday, closedToday };
+  return { open };
 }
 
+export const metadata: Metadata = {
+  title: 'IPO Details',
+};
+
 export default async function () {
-  const { closingToday, closedToday } = await getIpoDetails();
-  console.log(closingToday, closedToday);
+  const { open } = await getIpoDetails();
 
   return (
     <main className='p-2'>
-      <Table>
-        <TableCaption>IPO's Closing today</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>NAME</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Est. Listing Gains</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {closingToday.map((invoice: any) => (
-            <TableRow key={invoice.IPO}>
-              <TableCell className='font-medium'>{invoice.IPO}</TableCell>
-              <TableCell className='font-medium'>₹{invoice.Price}</TableCell>
-              <TableCell className='font-medium'>
-                {invoice['Est Listing'].split('(')[1].replace(')', '')}
-                {invoice.Status.replace('Closing Today', '')}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <Tabs defaultValue='open'>
+        <TabsList>
+          <TabsTrigger value='open'>
+            Open {new Date().toDateString()}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value='open'>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>NAME</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Est. Listing Gains</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {open.map((invoice: any) => (
+                <TableRow key={invoice.IPO}>
+                  <TableCell className='font-medium'>{invoice.IPO}</TableCell>
+                  <TableCell className='font-medium'>
+                    ₹{invoice.Price}
+                  </TableCell>
+                  <TableCell className='font-medium'>
+                    {invoice['Est Listing'].split('(')[1].replace(')', '')}
+                  </TableCell>
+                  <TableCell className='font-medium'>
+                    {invoice.Status.replace('Closing Today', '').replace(
+                      'Open',
+                      ''
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TabsContent>
+      </Tabs>
     </main>
   );
 }
