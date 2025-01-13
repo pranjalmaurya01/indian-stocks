@@ -1,35 +1,5 @@
 export const revalidate = 0;
 
-import * as cheerio from 'cheerio';
-
-async function getIpoDetails() {
-  const page = await fetch(
-    'https://www.investorgain.com/report/live-ipo-gmp/331/ipo/'
-  ).then((e) => e.text());
-
-  const $ = cheerio.load(page);
-
-  const closingTodayRows = $('tr:has(.badge.rounded-pill.bg-danger)');
-
-  const closingToday = closingTodayRows
-    .map((_, row) => {
-      const rowData = {};
-      $(row)
-        .find('td')
-        .each((_, td) => {
-          const dataLabel = $(td).attr('data-label');
-          const value = $(td).text().trim();
-          if (dataLabel) {
-            rowData[dataLabel] = value;
-          }
-        });
-      return rowData;
-    })
-    .get();
-
-  return { closingToday };
-}
-
 import {
   Table,
   TableBody,
@@ -39,9 +9,49 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import * as cheerio from 'cheerio';
+
+function processRows($: any, selectedRows: any) {
+  return selectedRows
+    .map((_, row) => {
+      const rowData = {};
+      $(row)
+        .find('td')
+        .each((_, td) => {
+          const dataLabel = $(td).attr('data-label');
+          const value = $(td).text().trim();
+          if (dataLabel) {
+            if (dataLabel === 'Fire Rating') {
+              rowData[dataLabel] = $(td).find('img').attr('alt');
+            } else {
+              rowData[dataLabel] = value;
+            }
+          }
+        });
+      return rowData;
+    })
+    .get();
+}
+
+async function getIpoDetails() {
+  const page = await fetch(
+    'https://www.investorgain.com/report/live-ipo-gmp/331/ipo/'
+  ).then((e) => e.text());
+
+  const $ = cheerio.load(page);
+
+  const closingTodayRows = $('tr:has(.badge.rounded-pill.bg-danger)');
+  const closedTodayRows = $('tr:has(.badge.rounded-pill.bg-primary)');
+
+  const closingToday = processRows($, closingTodayRows);
+  const closedToday = processRows($, closedTodayRows);
+
+  return { closingToday, closedToday };
+}
 
 export default async function () {
-  const { closingToday } = await getIpoDetails();
+  const { closingToday, closedToday } = await getIpoDetails();
+  console.log(closingToday, closedToday);
 
   return (
     <main className='p-2'>
