@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import sendWAMessage from '@/utils/whatsapp';
 import * as cheerio from 'cheerio';
 import { Metadata } from 'next';
 
@@ -39,7 +40,7 @@ async function getIpoDetails() {
   const page = await fetch(
     'https://www.investorgain.com/report/live-ipo-gmp/331/ipo/'
   ).then((e) => e.text());
-
+  await sendWAMessage('Updating IPO details');
   const $ = cheerio.load(page);
 
   const allRows: any[] = processRows($, $('tr'));
