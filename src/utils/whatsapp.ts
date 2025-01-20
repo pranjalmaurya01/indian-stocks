@@ -18,12 +18,14 @@ export default async function sendWAMessage(
     },
   });
 
-  return fetch(url, {
-    method: 'POST',
-    headers: headers,
-    body: body,
-  })
-    .then((response) => response.json())
-    .then((data) => console.log('Success:', data))
-    .catch((error) => console.error('Error:', error));
+  return (
+    fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: body,
+    })
+      .then((response) => response.json())
+      // .then((data) => console.log('Success:', data))
+      .catch((error) => console.error('Error:', error))
+  );
 }
