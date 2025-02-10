@@ -1,5 +1,4 @@
 import sendWAMessage from '@/utils/whatsapp';
-import * as cheerio from 'cheerio';
 
 const WA_DELETE_COLS = [
   'Price',
@@ -11,31 +10,6 @@ const WA_DELETE_COLS = [
   'Close',
   'Lot',
 ];
-
-function processRows($: any, selectedRows: any) {
-  return selectedRows
-    .map((_, row) => {
-      const rowData = {};
-      $(row)
-        .find('td')
-        .each((_, td) => {
-          const dataLabel = $(td).attr('data-label');
-          const value = $(td).text().trim();
-          if (dataLabel) {
-            if (dataLabel === 'Fire Rating') {
-              rowData[dataLabel] = $(td).find('img').attr('alt');
-            } else {
-              rowData[dataLabel] = value;
-            }
-          }
-        });
-      return rowData;
-    })
-    .get()
-    .filter(
-      (e) => Object.keys(e).length > 0 && !e['Status'].includes('[email')
-    );
-}
 
 function generateWhatsAppTable(data) {
   data = JSON.parse(JSON.stringify(data));
@@ -67,29 +41,30 @@ function generateWhatsAppTable(data) {
 }
 
 async function getIpoDetails() {
-  const page = await fetch(
-    'https://www.investorgain.com/report/live-ipo-gmp/331/ipo/'
-  ).then((e) => e.text());
-  const $ = cheerio.load(page);
+  const data = await fetch(
+    'https://webnodejs.investorgain.com/cloud/report/data-read/331/1/2/2025/2024-25/0/ipo?search=&v=20-49/'
+  ).then((e) => e.json().then((e) => e.reportTableData));
 
-  const allRows: any[] = processRows($, $('tr'));
-
-  const open = allRows.filter((e) => e?.Status?.split(' ')[0] === 'Open');
-  const closingToday = allRows.filter(
-    (e) => e?.Status?.split(' ')[0] === 'Closing'
-  );
+  const open = data
+    .filter((e) => e?.Status?.indexOf('Open') !== -1)
+    .map((e) => e.IPO)
+    .join(', ');
+  const closingToday = data
+    .filter((e) => e?.Status?.indexOf('Closing') !== -1)
+    .map((e) => e.IPO)
+    .join(', ');
 
   if (closingToday.length) {
     await Promise.all([
-      sendWAMessage('CLOSING TODAY'),
-      sendWAMessage('```' + generateWhatsAppTable(closingToday) + '```'),
+      sendWAMessage(`CLOSING TODAY\n${closingToday}`),
+      // sendWAMessage('```' + generateWhatsAppTable(closingToday) + '```'),
     ]);
   }
 
   if (open.length) {
     await Promise.all([
-      sendWAMessage('OPEN'),
-      sendWAMessage('```' + generateWhatsAppTable(open) + '```'),
+      sendWAMessage(`OPEN\n${open}`),
+      // sendWAMessage('```' + generateWhatsAppTable(open) + '```'),
     ]);
   }
 
